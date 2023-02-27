@@ -6,53 +6,40 @@ if (!this.Wrm) {
 Wrm.Common = function (executionContext) {
 	// let formContext = executionContext.getFormContext();
 	"use strict";
-	var getWrmSetting = function (SettingKey) {
-		return new Promise(function (resolve, reject) {
-			var SettingValue = "";
-			Xrm.WebApi.retrieveMultipleRecords(
-				"wrmb_wrmsetting",
-				"?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq '" + SettingKey + "' and statecode/Value eq 0)"
-			).then(function (results) {
-				if (results != null && results.length > 0) {
-					SettingValue = results[0].wrmb_value;
+	const getWrmSetting = (settingKey) => {
+		return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", `?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq '${settingKey}' and statecode/Value eq 0)`)
+			.then((results) => {
+				if (results != null && results.entities.length > 0) {
+					return results.entities[0].wrmb_value;
 				}
-				resolve(SettingValue);
-			}).catch(function (error) {
-				reject(error);
+				return "";
+			})
+			.catch((error) => {
+				console.error(error);
+				return "";
 			});
-		});
 	};
 
-	var isPortfolioNetEnabled = function () {
-		return new Promise(function (resolve, reject) {
-			// Check for system
-			Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", "?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq 'WRM.PortfolioSystem') and (wrmb_value eq 'PortfolioNet')").then(
-				function (systemResults) {
-					if (systemResults.entities.length > 0) {
-						// Check for customernumber
-						Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", "?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq 'WRM.PortfolioSystem.CustomerNumber') and (wrmb_value ne null)").then(
-							function (customerNumberResults) {
-								if (customerNumberResults.entities.length > 0) {
-									resolve(true);
-								} else {
-									resolve(false);
-								}
-							},
-							function (error) {
-								console.error(error.message);
-								reject(error.message);
-							}
-						);
-					} else {
-						resolve(false);
-					}
-				},
-				function (error) {
-					console.error(error.message);
-					reject(error.message);
+
+	const isPortfolioNetEnabled = () => {
+		return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", `?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq 'WRM.PortfolioSystem') and (wrmb_value eq 'PortfolioNet')`)
+			.then((systemResults) => {
+				if (systemResults.entities.length > 0) {
+					return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", `?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq 'WRM.PortfolioSystem.CustomerNumber') and (wrmb_value ne null)`)
+						.then((customerNumberResults) => {
+							return customerNumberResults.entities.length > 0;
+						})
+						.catch((error) => {
+							console.error(error.message);
+							return false;
+						});
 				}
-			);
-		});
+				return false;
+			})
+			.catch((error) => {
+				console.error(error.message);
+				return false;
+			});
 	};
 
 	var disableAllControlsOnForm = function (formContext) {
@@ -92,21 +79,23 @@ Wrm.Common = function (executionContext) {
 	};
 
 	var getCountryPhonePrefix = function (countryid) {
-		return new Promise(function(resolve, reject) {
-			Xrm.WebApi.retrieveRecord("wrmb_country", countryid, "?$select=wrmb_phonecountrycode")
-			.then(function(result) {
-				if(result !== null) {
-					resolve(result.wrmb_phonecountrycode);
-				} else {
-					reject("No record found with the given countryid");
+		var PhonePrefix = "";
+		var retrieveOptions = "?$select=wrmb_phonecountrycode";
+		Xrm.WebApi.retrieveRecord("wrmb_country", countryid, retrieveOptions).then(
+			function success(result) {
+				if (result != null) {
+					PhonePrefix = result.wrmb_phonecountrycode;
 				}
-			})
-			.catch(function(error) {
-				reject(error.message);
-			});
-		});
+			},
+			function error(error) {
+				console.log("Error: " + error.message);
+			}
+		);
+
+		return PhonePrefix;
 	};
-	
+
+
 
 	var updatePhoneNumberCountryCode = function (countryfieldname, phonefieldname, formContext) {
 		var SelectedCountry = "";
@@ -171,10 +160,10 @@ Wrm.Common = function (executionContext) {
 		commandProperties["PopulationXML"] = '<Menu Id="wrmb.account.AddressToClipboard.Button.Menu">';
 		commandProperties["PopulationXML"] += '<MenuSection Id="wrmb.account.AccountAddress.Section" Sequence="10" DisplayMode="Menu16">';
 		commandProperties["PopulationXML"] += '<Controls Id="wrmb.account.AccountAddress.Section.Controls">';
-	
+
 		var entityTypeName = "";
 		var clickEventName = "";
-	
+
 		if (entityType === 1) {
 			entityTypeName = "wrmb_companyid";
 			clickEventName = "wrmb.account.AddressItemClicked.Command";
@@ -184,10 +173,10 @@ Wrm.Common = function (executionContext) {
 		} else {
 			return;
 		}
-	
+
 		var filter = "(" + entityTypeName + "/Id eq " + entityIds[0].replace('{', '').replace('}', '') + " and statecode/Value eq 0)";
 		var select = "?$select=wrmb_addressId, wrmb_typeid, wrmb_street1";
-	
+
 		Xrm.WebApi.retrieveMultipleRecords("wrmb_address", select, filter).then(
 			function success(results) {
 				if (results !== null && results.length > 0) {
@@ -207,16 +196,16 @@ Wrm.Common = function (executionContext) {
 		}).finally(function () {
 			commandProperties["PopulationXML"] += '</Controls></MenuSection></Menu>';
 		});
-	}	
+	}
 
 	var populateDynamicEmailMenu = function (commandProperties, entityType, entityIds) {
 		commandProperties["PopulationXML"] = '<Menu Id="wrmb.account.AddressToClipboard.Button.Menu">';
 		commandProperties["PopulationXML"] += '<MenuSection Id="wrmb.account.AccountAddress.Section" Sequence="10" DisplayMode="Menu16">';
 		commandProperties["PopulationXML"] += '<Controls Id="wrmb.account.AccountAddress.Section.Controls">';
-	
+
 		var entityTypeName = "";
 		var clickEventName = "";
-	
+
 		if (entityType === 1) {
 			entityTypeName = "wrmb_companyid";
 			clickEventName = "wrmb.account.EmailItemClicked.Command";
@@ -228,7 +217,7 @@ Wrm.Common = function (executionContext) {
 		else {
 			return;
 		}
-	
+
 		Xrm.WebApi.retrieveMultipleRecords("wrmb_address", "?$select=wrmb_emailaddress1&$filter=(" + entityTypeName + "/Id eq (guid'" + entityIds[0].replace('{', '').replace('}', '') + "') and statecode/Value eq 0)")
 			.then(function (results) {
 				if (results !== null && results.entities.length > 0) {
@@ -245,49 +234,49 @@ Wrm.Common = function (executionContext) {
 			.then(function () {
 				commandProperties["PopulationXML"] += '</Controls></MenuSection></Menu>';
 			});
-	}	
+	}
 
 	var addressItemClicked = function (commandProperties) {
 		var addressId = commandProperties.SourceControlId;
-	
+
 		Xrm.WebApi.retrieveRecord("wrmb_addressSet", addressId, "?$select=wrmb_salutation,wrmb_name,wrmb_co,wrmb_street1,wrmb_street2,wrmb_postofficebox,wrmb_postalcode,wrmb_city,wrmb_countryid")
 			.then(function (result) {
 				var fullAddress = "";
-	
+
 				if (result.wrmb_salutation !== null && result.wrmb_salutation.length > 0)
 					fullAddress += result.wrmb_salutation + "\n";
-	
+
 				if (result.wrmb_name !== null && result.wrmb_name.length > 0)
 					fullAddress += result.wrmb_name + "\n";
-	
+
 				if (result.wrmb_co !== null && result.wrmb_co.length > 0)
 					fullAddress += "c/o " + result.wrmb_co + "\n";
-	
+
 				if (result.wrmb_street1 !== null && result.wrmb_street1.length > 0)
 					fullAddress += result.wrmb_street1 + "\n";
-	
+
 				if (result.wrmb_street2 !== null && result.wrmb_street2.length > 0)
 					fullAddress += result.wrmb_street2 + "\n";
-	
+
 				if (result.wrmb_postofficebox !== null && result.wrmb_postofficebox.length > 0)
 					fullAddress += result.wrmb_postofficebox + "\n";
-	
+
 				if (result.wrmb_postalcode !== null && result.wrmb_postalcode.length > 0)
 					fullAddress += result.wrmb_postalcode + " ";
-	
+
 				if (result.wrmb_city !== null && result.wrmb_city.length > 0)
 					fullAddress += result.wrmb_city + "\n";
-	
+
 				if (result.wrmb_countryid !== null && result.wrmb_countryid.Name !== null && result.wrmb_countryid.Name.length > 0)
 					fullAddress += result.wrmb_countryid.Name;
-	
+
 				window.clipboardData.setData("Text", fullAddress);
 			})
 			.catch(function (error) {
 				alert(error.message);
 			});
 	}
-	
+
 	var emailItemClicked = function (commandProperties) {
 		var email = commandProperties.SourceControlId;
 		window.clipboardData.setData("Text", email);
