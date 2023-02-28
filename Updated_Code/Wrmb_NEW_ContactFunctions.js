@@ -17,37 +17,13 @@ Wrm.Contact = function (executionContext) {
 				formContext.ui.setFormNotification('Active Name Check on this record detected!', 'WARNING', 'wrmb_namecheck_NOTIFY');
 			}
 			if(formContext.getAttribute("wrmb_isclient") !== null && formContext.getAttribute("wrmb_isclient").getValue() === true){
-				Wrm.Common.GetWrmSetting("WRM.IdentificationDocument.ContactIdentification.Types", 
+				console.log(formContext.getAttribute("wrmb_isclient").getValue());
+				Wrm.Common.GetWrmSettingV2("WRM.IdentificationDocument.ContactIdentification.Types")
+				console.log(Wrm.Common.GetWrmSettingV2("WRM.IdentificationDocument.ContactIdentification.Types"))
+				.then( 
 				function(DocTypeToCheck){
-					// if(DocTypeToCheck !== null && DocTypeToCheck !== ""){
-					// 	var docTypes = DocTypeToCheck.split(",");
-					// 	if(docTypes.length > 0){
-					// 		var fetchDocTypeCheck =
-					// 			"<fetch mapping='logical'>" +
-					// 			"  <entity name='wrmb_identificationdocument'>" +
-					// 			"	<attribute name='wrmb_identificationdocumentid' />" +
-					// 			"	<filter type='and'>" +
-					// 			"	  <condition attribute='statecode' operator='eq' value='0' />" +
-					// 			"	  <condition attribute='wrmb_contactid' operator='eq' value='" + formContext.data.entity.getId() + "' />" +
-					// 			"	</filter>" +
-					// 			"	<link-entity name='wrmb_identificationdocumenttype' from='wrmb_identificationdocumenttypeid' to='wrmb_typeid' alias='aq'>" +
-					// 			"	  <filter type='or'>";
-					// 		for(var i = 0; i < docTypes.length; i++){
-					// 			fetchDocTypeCheck += "<condition attribute='wrmb_name' operator='eq' value='" + docTypes[i].trim() + "' />" ;
-					// 		}
-					// 		fetchDocTypeCheck += "</filter>" +
-					// 			"	</link-entity>" +
-					// 			"  </entity>" +
-					// 			"</fetch>";
-								
-					// 		XrmServiceToolkit.Soap.Fetch(fetchDocTypeCheck, null, function(retrievedDocs){
-					// 			if(retrievedDocs === null || retrievedDocs.length === 0){
-					// 				formContext.ui.setFormNotification('No valid Identification Document assigned to this record!', 'WARNING', 'identitydocument_NOTIFY');
-					// 			}
-					// 		});
-					// 	}
-					// }
                     debugger;
+					console.log(DocTypeToCheck);
                     if(DocTypeToCheck !== null && DocTypeToCheck !== ""){
                         var docTypes = DocTypeToCheck.split(",");
                         debugger;
@@ -88,16 +64,19 @@ Wrm.Contact = function (executionContext) {
                         }
                     }
 				}
-                );
+                )
+				.catch((error) => {
+					console.log(error);
+				});
 			}
 		}
 		
-		Wrm.Common.SetPhoneNumberCountryOnChange("wrmb_phoneprivatecountryid", "telephone3");
-		Wrm.Common.SetPhoneNumberCountryOnChange("wrmb_phonebusinesscountryid", "telephone1");
-		Wrm.Common.SetPhoneNumberCountryOnChange("wrmb_mobilephoneprivatecountryid", "mobilephone");
-		Wrm.Common.SetPhoneNumberCountryOnChange("wrmb_mobilephonebusinesscountryid", "wrmb_mobilephonebusiness");
-		Wrm.Common.SetPhoneNumberCountryOnChange("wrmb_faxprivatecountryid", "fax");
-		Wrm.Common.SetPhoneNumberCountryOnChange("wrmb_faxbusinesscountryid", "wrmb_faxbusiness");
+		Wrm.Common.SetPhoneNumberCountryOnChangeV2("wrmb_phoneprivatecountryid", "telephone3",formContext);
+		Wrm.Common.SetPhoneNumberCountryOnChangeV2("wrmb_phonebusinesscountryid", "telephone1",formContext);
+		Wrm.Common.SetPhoneNumberCountryOnChangeV2("wrmb_mobilephoneprivatecountryid", "mobilephone",formContext);
+		Wrm.Common.SetPhoneNumberCountryOnChangeV2("wrmb_mobilephonebusinesscountryid", "wrmb_mobilephonebusiness",formContext);
+		Wrm.Common.SetPhoneNumberCountryOnChangeV2("wrmb_faxprivatecountryid", "fax",formContext);
+		Wrm.Common.SetPhoneNumberCountryOnChangeV2("wrmb_faxbusinesscountryid", "wrmb_faxbusiness",formContext);
 		
 		Wrm.Common.SetAddressCountryOnChange("wrmb_address1_countryid",
 							["wrmb_address1_addresssalutation", 
