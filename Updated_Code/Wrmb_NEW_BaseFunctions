@@ -378,7 +378,7 @@ Wrm.Common = function (executionContext) {
 	"use strict";
 	const getWrmSettingV2 = (settingKey) => {
 		console.log('getWrmSettingV2 function called');
-		return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", `?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq '${settingKey}' and statecode/Value eq 0)`)
+		return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsettingSet", `?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq '${settingKey}' and statecode/Value eq 0)`)
 			.then((results) => {
 				console.log("records retrieved");
 				if (results != null && results.entities.length > 0) {
@@ -619,7 +619,7 @@ Wrm.Common = function (executionContext) {
 	var addressItemClickedV2 = function (commandProperties) {
 		var addressId = commandProperties.SourceControlId;
 
-		Xrm.WebApi.retrieveRecord("wrmb_addressSet", addressId, "?$select=wrmb_salutation,wrmb_name,wrmb_co,wrmb_street1,wrmb_street2,wrmb_postofficebox,wrmb_postalcode,wrmb_city,wrmb_countryid")
+		Xrm.WebApi.retrieveRecord("wrmb_address", addressId, "?$select=wrmb_salutation,wrmb_name,wrmb_co,wrmb_street1,wrmb_street2,wrmb_postofficebox,wrmb_postalcode,wrmb_city,wrmb_countryid")
 			.then(function (result) {
 				var fullAddress = "";
 
