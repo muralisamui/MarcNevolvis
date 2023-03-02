@@ -19,7 +19,6 @@ Wrm.Contact = function (executionContext) {
 			if(formContext.getAttribute("wrmb_isclient") !== null && formContext.getAttribute("wrmb_isclient").getValue() === true){
 				console.log(formContext.getAttribute("wrmb_isclient").getValue());
 				Wrm.Common.GetWrmSettingV2("WRM.IdentificationDocument.ContactIdentification.Types")
-				console.log(Wrm.Common.GetWrmSettingV2("WRM.IdentificationDocument.ContactIdentification.Types"))
 				.then( 
 				function(DocTypeToCheck){
                     debugger;

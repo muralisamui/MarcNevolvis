@@ -344,27 +344,29 @@ Wrm.Common = function (executionContext) {
 		return false;
 	}
 
-	var openConnectionGraph = function () {
-		//Daten werden in Modal-Dialog-HTML geladen
-		var WinSettingsOpen = "resizable=no,titlebar=no,menubar=no,scrollbars=no,toolbar=no,height=705px,width=905px";
-		var WinSettings = "center:yes;titlebar=no;toolbar=no;resizable:no;dialogHeight:705px;dialogWidth:905px";
-		var WinParams = new Object();
-		WinParams.id = Xrm.Page.data.entity.getId();
-		WinParams.entityname = Xrm.Page.data.entity.getEntityName();
-		WinParams.name = "Current Item";
-		if (WinParams.entityname == "contact") {
-			WinParams.name = Xrm.Page.getAttribute("fullname").getValue();
-		}
-		if (WinParams.entityname == "account") {
-			WinParams.name = Xrm.Page.getAttribute("name").getValue();
-		}
+	//Not needed anymore ***
 
-		var resUrl = Xrm.Page.context.prependOrgName("/WebResources/wrmb_/ConnectionGraph.html");
-		var paramEncode = encodeURIComponent("id=" + WinParams.id + "&entityname=" + WinParams.entityname + "&name=" + WinParams.name);
+	// var openConnectionGraph = function () {
+	// 	//Daten werden in Modal-Dialog-HTML geladen
+	// 	var WinSettingsOpen = "resizable=no,titlebar=no,menubar=no,scrollbars=no,toolbar=no,height=705px,width=905px";
+	// 	var WinSettings = "center:yes;titlebar=no;toolbar=no;resizable:no;dialogHeight:705px;dialogWidth:905px";
+	// 	var WinParams = new Object();
+	// 	WinParams.id = Xrm.Page.data.entity.getId();
+	// 	WinParams.entityname = Xrm.Page.data.entity.getEntityName();
+	// 	WinParams.name = "Current Item";
+	// 	if (WinParams.entityname == "contact") {
+	// 		WinParams.name = Xrm.Page.getAttribute("fullname").getValue();
+	// 	}
+	// 	if (WinParams.entityname == "account") {
+	// 		WinParams.name = Xrm.Page.getAttribute("name").getValue();
+	// 	}
 
-		var openWindow = window.open(resUrl + "?data=" + paramEncode, "_blank", WinSettingsOpen);
-		//var ModDialog = window.showModalDialog(resUrl, WinParams, WinSettings);
-	}
+	// 	var resUrl = Xrm.Page.context.prependOrgName("/WebResources/wrmb_/ConnectionGraph.html");
+	// 	var paramEncode = encodeURIComponent("id=" + WinParams.id + "&entityname=" + WinParams.entityname + "&name=" + WinParams.name);
+
+	// 	var openWindow = window.open(resUrl + "?data=" + paramEncode, "_blank", WinSettingsOpen);
+	// 	//var ModDialog = window.showModalDialog(resUrl, WinParams, WinSettings);
+	// }
 
 	var isConnectionGraphEnabled = function () {
 		if (Wrm.Common.GetWrmSetting("WRM.ConnectionGraph.IsEnabled") == "1") {
@@ -378,10 +380,13 @@ Wrm.Common = function (executionContext) {
 	"use strict";
 	const getWrmSettingV2 = (settingKey) => {
 		console.log('getWrmSettingV2 function called');
-		return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsettingSet", `?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=(wrmb_name eq '${settingKey}' and statecode/Value eq 0)`)
-			.then((results) => {
-				console.log("records retrieved");
+		let queryString = '?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=wrmb_name eq '+ settingKey + ' and statecode/Value eq 0';
+		debugger;
+		return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", queryString).then((results) => {
+				debugger;
+				console.log("records retrieved", results);
 				if (results != null && results.entities.length > 0) {
+					debugger;
 					console.log(results);
 					return results.entities[0].wrmb_value;
 				}
