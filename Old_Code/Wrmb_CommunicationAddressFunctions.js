@@ -1,50 +1,58 @@
 if (!this.Wrm){
+	"use strict";
 	Wrm = function () {};
 }
 
-Wrm.CommunicationAddress = function () {
-    var onLoad = function () {
-		if(Xrm.Page.getAttribute("wrmb_collaborationid") == null || Xrm.Page.getAttribute("wrmb_collaborationid").getValue() == null
-		|| Xrm.Page.getControl("wrmb_addressid") == null){
+Wrm.CommunicationAddress = function (executionContext) {
+	"use strict";
+	debugger;
+	var onLoad = function (executionContext) {
+		"use strict";
+		debugger;
+		let formContext = executionContext.getFormContext();
+
+		if (!formContext.getAttribute("wrmb_collaborationid") || !formContext.getAttribute("wrmb_collaborationid").getValue() || !formContext.getControl("wrmb_addressid")) {
 			return;
 		}
-		var CollID = Xrm.Page.getAttribute("wrmb_collaborationid").getValue()[0].id;
-		var RelatedIDs = new Array();
-		XrmServiceToolkit.Rest.RetrieveMultiple(
-			"wrmb_collaboration2accountSet",
-			"$select=accountid&$filter=(wrmb_collaborationid eq (guid'" + CollID + "'))",
-			function (results) {
-				if(results != null && results.length > 0){
-					for(var i = 0; i < results.length; i++){
-						RelatedIDs.push(results[i].accountid);
-					}
-				}
-			},
-			function (error) {
-				alert(error.message);
-			},
-			function onComplete() {},
-			false
-		);
 		
-		XrmServiceToolkit.Rest.RetrieveMultiple(
+		var CollID = formContext.getAttribute("wrmb_collaborationid").getValue()[0].id;
+		var RelatedIDs = [];
+		
+		Xrm.WebApi.retrieveMultipleRecords(
+			// "wrmb_collaboration2account", 
+			"wrmb_collaboration2accountSet",
+			"?$select=accountid&$filter=wrmb_collaborationid eq " + CollID)
+			.then(function (results) {
+				debugger;
+				if (results.entities.length > 0) {
+					results.entities.forEach(function (entity) {
+						RelatedIDs.push(entity.accountid);
+					});
+				}
+			})
+			.catch(function (error) {
+				console.log(error.message);
+			});
+		
+		Xrm.WebApi.retrieveMultipleRecords(
 			"wrmb_collaboration2contactSet",
-			"$select=contactid&$filter=(wrmb_collaborationid eq (guid'" + CollID + "'))",
+			"$select=contactid&$filter=(wrmb_collaborationid eq (guid'" + CollID + "'))"
+		)
+		.then(
 			function (results) {
+				debugger;
 				if(results != null && results.length > 0){
 					for(var i = 0; i < results.length; i++){
 						RelatedIDs.push(results[i].contactid);
 					}
 				}
-			},
-			function (error) {
-				alert(error.message);
-			},
-			function onComplete() {},
-			false
-		);
-		
-		Xrm.Page.getControl("wrmb_addressid").addPreSearch(function () {
+			}
+		)
+		.catch(function (error) {
+			console.log(error.message);
+		});
+
+		formContext.getControl("wrmb_addressid").addPreSearch(function () {
 			var customFetchFilter = "";  
 			if(RelatedIDs.length > 0){
 				customFetchFilter = "<filter type='or'>";
@@ -56,7 +64,9 @@ Wrm.CommunicationAddress = function () {
 			}else{
 				customFetchFilter = "<filter type='and'><condition attribute='wrmb_companyid' operator='eq' value='00000000-0000-0000-0000-000000000000' /></filter>";  
 			}
-			Xrm.Page.getControl("wrmb_addressid").addCustomFilter(customFetchFilter);
+			debugger;
+			formContext.getControl("wrmb_addressid").addCustomFilter(customFetchFilter);
+			debugger;
 	   });
 
     };

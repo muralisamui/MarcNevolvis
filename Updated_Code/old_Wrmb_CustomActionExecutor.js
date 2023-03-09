@@ -1,4 +1,4 @@
-﻿if (typeof CustomActionExecutor === 'undefined') {
+﻿if (typeof CustomActionExecutor == 'undefined') {
     CustomActionExecutor = {
         Execute: function (opts) {
             var req = new XMLHttpRequest();
@@ -11,8 +11,8 @@
             req.setRequestHeader("Content-Type", "text/xml; charset=utf-8");
             req.setRequestHeader("SOAPAction", "http://schemas.microsoft.com/xrm/2011/Contracts/Services/IOrganizationService/Execute");
             req.onreadystatechange = function () {
-                if (req.readyState === 4) { // "complete"
-                    if (req.status === 200) { // "OK"
+                if (req.readyState == 4) { // "complete"
+                    if (req.status == 200) { // "OK"
                         CustomActionExecutor.ProcessSoapResponse(req.responseXML, opts.successCallback, opts.errorCallback);
                     } else {
                         opts.errorCallback(CustomActionExecutor.ProcessSoapError(req.responseXML));
@@ -62,12 +62,12 @@
             return result;
         },
         ObjectifyNode: function (node) {
-            if (node.attributes !== null) {
-                if (node.attributes.getNamedItem("i:nil") !== null && node.attributes.getNamedItem("i:nil").nodeValue === "true") {
+            if (node.attributes != null) {
+                if (node.attributes.getNamedItem("i:nil") != null && node.attributes.getNamedItem("i:nil").nodeValue == "true") {
                     return null;
                 }
 
-                var nodeTypeName = node.attributes.getNamedItem("i:type") === null ? "c:string" : node.attributes.getNamedItem("i:type").nodeValue;
+                var nodeTypeName = node.attributes.getNamedItem("i:type") == null ? "c:string" : node.attributes.getNamedItem("i:type").nodeValue;
 
                 switch (nodeTypeName) {
                     case "a:EntityReference":
@@ -89,7 +89,7 @@
                     case "a:OptionSetValue":
                         return parseInt(CustomActionExecutor._getNodeText(node.childNodes[0]));
                     case "c:boolean":
-                        return CustomActionExecutor._getNodeText(node.childNodes[0]) === "true";
+                        return CustomActionExecutor._getNodeText(node.childNodes[0]) == "true";
                     case "c:double":
                     case "c:decimal":
                     case "a:Money":
@@ -122,30 +122,30 @@
             return result;
         },
         ParseIsoDate: function (s) {
-            if (s === null || !s.match(CustomActionExecutor.isoDateExpression))
+            if (s == null || !s.match(CustomActionExecutor.isoDateExpression))
                 return null;
 
             var dateParts = CustomActionExecutor.isoDateExpression.exec(s);
             return new Date(Date.UTC(parseInt(dateParts[1], 10),
                 parseInt(dateParts[2], 10) - 1,
                 parseInt(dateParts[3], 10),
-                parseInt(dateParts[4], 10) - (dateParts[8] === "" || dateParts[8] === "Z" ? 0 : parseInt(dateParts[8])),
+                parseInt(dateParts[4], 10) - (dateParts[8] == "" || dateParts[8] == "Z" ? 0 : parseInt(dateParts[8])),
                 parseInt(dateParts[5], 10),
                 parseInt(dateParts[6], 10)));
         },
         GetServiceUrl: function () {
             var context = null;
 
-            if (typeof GetGlobalContext === 'function') {
+            if (typeof GetGlobalContext == 'function') {
                 context = GetGlobalContext();
-            } else if (typeof Xrm !== 'undefined') {
+            } else if (typeof Xrm != 'undefined') {
                 context = Xrm.Page.context;
             }
 
             return context.getClientUrl() + "/XRMServices/2011/Organization.svc/web";
         },
         _selectNodes: function (node, xPathExpression) {
-            if (typeof (node.selectNodes) !== "undefined") {
+            if (typeof (node.selectNodes) != "undefined") {
                 return node.selectNodes(xPathExpression);
             }
             else {
@@ -160,17 +160,17 @@
             }
         },
         _selectSingleNode: function (node, xpathExpr) {
-            if (typeof (node.selectSingleNode) !== "undefined") {
+            if (typeof (node.selectSingleNode) != "undefined") {
                 return node.selectSingleNode(xpathExpr);
             }
             else {
                 var xpe = new XPathEvaluator();
                 var xPathNode = xpe.evaluate(xpathExpr, node, CustomActionExecutor._NSResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-                return (xPathNode !== null) ? xPathNode.singleNodeValue : null;
+                return (xPathNode != null) ? xPathNode.singleNodeValue : null;
             }
         },
         _getNodeText: function (node) {
-            if (typeof (node.text) !== "undefined") {
+            if (typeof (node.text) != "undefined") {
                 return node.text;
             }
             else {
@@ -178,17 +178,17 @@
             }
         },
         _isNodeNull: function (node) {
-            if (node === null) {
+            if (node == null) {
                 return true;
             }
 
-            if ((node.attributes.getNamedItem("i:nil") !== null) && (node.attributes.getNamedItem("i:nil").value === "true")) {
+            if ((node.attributes.getNamedItem("i:nil") != null) && (node.attributes.getNamedItem("i:nil").value == "true")) {
                 return true;
             }
             return false;
         },
         _getNodeName: function (node) {
-            if (typeof (node.baseName) !== "undefined") {
+            if (typeof (node.baseName) != "undefined") {
                 return node.baseName;
             }
             else {
@@ -209,25 +209,3 @@
         __namespace: true
     };
 }
-
-// •	The use of XMLHttpRequest for making requests is deprecated. It is recommended to use the fetch() API instead.
-
-// •	The use of responseXML property to access the response data is deprecated. It is recommended to use responseType property with "document" value and then access the response data using response property.
-
-// •	The SelectionNamespaces property is deprecated. It is recommended to use DOMParser to parse the XML document and then use querySelector and querySelectorAll methods to select elements.
-
-// •	The use of getProperty method is deprecated. It is recommended to use getAttribute method instead.
-
-// •	The use of childNodes property to access child nodes is deprecated. It is recommended to use children property instead.
-
-// •	The use of text property to access text content is deprecated. It is recommended to use textContent property instead.
-
-// •	The use of innerText property is deprecated. It is recommended to use textContent property instead.
-
-// •	The use of firstChild and nextSibling properties to access child nodes is deprecated. It is recommended to use firstElementChild, lastElementChild, nextElementSibling, and previousElementSibling properties instead.
-
-// •	The use of parseInt and parseFloat functions without specifying a radix is deprecated. It is recommended to always specify the radix parameter.
-
-// •	The use of nodeValue property to access node value is deprecated. It is recommended to use textContent property instead.
-
-// •	The use of new Date(string) constructor to parse ISO date strings is deprecated. It is recommended to use Date.parse(string) method or new Date(Date.UTC(year, month[, day[, hour[, minute[, second[, millisecond]]]]])) constructor instead.

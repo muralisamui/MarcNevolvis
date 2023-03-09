@@ -2,29 +2,26 @@ if (!this.Wrm){
 	Wrm = function () {};
 }
 
-Wrm.KycConfigurationProfile = function (executionContext) {
-    var publish = function (executionContext) {
-		let formContext = executionContext.getFormContext();
-		if(formContext.getAttribute("statuscode") !== null){
-			formContext.getAttribute("statuscode").setValue(1);
-			formContext.getAttribute("statuscode").setSubmitMode("always"); 
-			formContext.data.entity.save();
+Wrm.KycConfigurationProfile = function () {
+    var publish = function () {
+		if(Xrm.Page.getAttribute("statuscode") != null){
+			Xrm.Page.getAttribute("statuscode").setValue(1);
+			Xrm.Page.getAttribute("statuscode").setSubmitMode("always"); 
+			Xrm.Page.data.entity.save();
 		}
     };
 	
-    var unpublish = function (executionContext) {
-		let formContext = executionContext.getFormContext();
-		if(formContext.getAttribute("statuscode") !== null){
-			formContext.getAttribute("statuscode").setValue(320560000);
-			formContext.getAttribute("statuscode").setSubmitMode("always"); 
-			formContext.data.entity.save();
+    var unpublish = function () {
+		if(Xrm.Page.getAttribute("statuscode") != null){
+			Xrm.Page.getAttribute("statuscode").setValue(320560000);
+			Xrm.Page.getAttribute("statuscode").setSubmitMode("always"); 
+			Xrm.Page.data.entity.save();
 		}
     };
 	
-    var revise = function (executionContext) {
-		let formContext = executionContext.getFormContext();
-		var entityId = formContext.data.entity.getId();
-		var entityName = formContext.data.entity.getEntityName();
+    var revise = function () {
+		var entityId = Xrm.Page.data.entity.getId();
+		var entityName = Xrm.Page.data.entity.getEntityName();
 		var requestName = "wrmr_createrevisionaction_configurationprofile";
 		
 		// Creating the request XML for calling the Action
@@ -65,9 +62,8 @@ Wrm.KycConfigurationProfile = function (executionContext) {
 		});
     };
 	
-    var isPublished = function (executionContext) {
-		let formContext = executionContext.getFormContext();
-		if(formContext.getAttribute("statuscode") !== null && formContext.getAttribute("statuscode").getValue() === 1){
+    var isPublished = function () {
+		if(Xrm.Page.getAttribute("statuscode") != null && Xrm.Page.getAttribute("statuscode").getValue() == 1){
 			return true;
 		}
 		
