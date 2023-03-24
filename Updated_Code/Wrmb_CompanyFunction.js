@@ -57,7 +57,7 @@ Wrm.Company = function (executionContext) {
     }
 
     var BankTypeName = null;
-    var onLoad = function (executionContext) {
+    var onLoad = async (executionContext) => {
         "strict mode";
 
         let formContext = executionContext.getFormContext();
@@ -66,7 +66,7 @@ Wrm.Company = function (executionContext) {
 
         if (formContext.getAttribute("wrmb_companytypeid") !== null) {
 
-            BankTypeName = Wrm.Common.GetWrmSetting("WRM.Company.Bank.Type");
+            BankTypeName = await Wrm.Common.GetWrmSettingV2("WRM.Company.Bank.Type");
             formContext.getAttribute("wrmb_companytypeid").addOnChange(Wrm.Company.OnChangeCompanyType);
             Wrm.Company.CheckBankTab(formContext);
         }
@@ -75,9 +75,11 @@ Wrm.Company = function (executionContext) {
                 formContext.ui.setFormNotification('Active Name Check on this record detected!', 'WARNING', 'wrmb_namecheck_NOTIFY');
             }
             if (formContext.getAttribute("wrmb_isclient") !== null && formContext.getAttribute("wrmb_isclient").getValue() === true) {
-                Wrm.Common.GetWrmSetting("WRM.IdentificationDocument.CompanyIdentification.Types",
-                    checkIdentificationDocumentsAsync()                 
-                );
+                Wrm.Common.GetWrmSettingV2("WRM.IdentificationDocument.CompanyIdentification.Types").then(
+                    checkIdentificationDocumentsAsync()
+                ).catch((error) => {
+                    console.log(error);
+                });
             }
         }
         Wrm.Common.SetPhoneNumberCountryOnChange("wrmb_phonecountryid", "telephone1");
@@ -110,16 +112,16 @@ Wrm.Company = function (executionContext) {
 
     // var onLoad = function (executionContext) {
     //     let formContext = executionContext.getFormContext();
-	// 	if(formContext.getAttribute("wrmb_companytypeid") != null){
-	// 		BankTypeName = Wrm.Common.GetWrmSetting("WRM.Company.Bank.Type");
-	// 		formContext.getAttribute("wrmb_companytypeid").addOnChange(Wrm.Company.OnChangeCompanyType);
-	// 		Wrm.Company.CheckBankTab(formContext);
-	// 	}
-	// 	if(formContext.ui.getFormType() == 2 || formContext.ui.getFormType() == 3 || formContext.ui.getFormType() == 4 || formContext.ui.getFormType() == 11){
-	// 		if(formContext.getAttribute("wrmb_namecheck") != null && formContext.getAttribute("wrmb_namecheck").getValue() == true){
-	// 			formContext.ui.setFormNotification('Active Name Check on this record detected!', 'WARNING', 'wrmb_namecheck_NOTIFY');
-	// 		}
-	// 		if(formContext.getAttribute("wrmb_isclient") != null && formContext.getAttribute("wrmb_isclient").getValue() == true){
+    // 	if(formContext.getAttribute("wrmb_companytypeid") != null){
+    // 		BankTypeName = Wrm.Common.GetWrmSetting("WRM.Company.Bank.Type");
+    // 		formContext.getAttribute("wrmb_companytypeid").addOnChange(Wrm.Company.OnChangeCompanyType);
+    // 		Wrm.Company.CheckBankTab(formContext);
+    // 	}
+    // 	if(formContext.ui.getFormType() == 2 || formContext.ui.getFormType() == 3 || formContext.ui.getFormType() == 4 || formContext.ui.getFormType() == 11){
+    // 		if(formContext.getAttribute("wrmb_namecheck") != null && formContext.getAttribute("wrmb_namecheck").getValue() == true){
+    // 			formContext.ui.setFormNotification('Active Name Check on this record detected!', 'WARNING', 'wrmb_namecheck_NOTIFY');
+    // 		}
+    // 		if(formContext.getAttribute("wrmb_isclient") != null && formContext.getAttribute("wrmb_isclient").getValue() == true){
     //             Wrm.Common.GetWrmSetting("WRM.IdentificationDocument.CompanyIdentification.Types")
     //                 .then(async (DocTypeToCheck) => {
     //                     await checkIdentificationDocumentsAsync(DocTypeToCheck, formContext);
@@ -127,10 +129,10 @@ Wrm.Company = function (executionContext) {
     //                 .catch((error) => {
     //                     console.log(error);
     //                 });
-	// 		}
-	// 	}
+    // 		}
+    // 	}
     // }
-    
+
     // async function checkIdentificationDocumentsAsync(DocTypeToCheck, formContext) {
     //     console.log("api called");
     //     if (DocTypeToCheck !== null && DocTypeToCheck !== "") {
@@ -201,10 +203,25 @@ Wrm.Company = function (executionContext) {
             }
         }
     };
+    var getWrmSettingV2 = async (SettingKey) => {
+        console.log('get wrm called 1');
+        try {
+            const result = await Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", `?$select=wrmb_value&$filter=wrmb_name eq '${SettingKey}' and statecode eq 0`);
+            if (result.entities.length > 0) {
+                return result.entities[0].wrmb_value;
+            } else {
+                return "";
+            }
+        } catch (error) {
+            console.log(error.message);
+            throw new Error(`Error retrieving wrm setting '${SettingKey}': ${error.message}`);
+        }
+    }
 
     return {
         OnLoad: onLoad,
         OnChangeCompanyType: onChangeCompanyType,
-        CheckBankTab: checkBankTab
+        CheckBankTab: checkBankTab,
+        GetWrmSettingV2: getWrmSettingV2
     };
 }();

@@ -379,8 +379,7 @@ Wrm.Common = function (executionContext) {
 	//updated V2 code
 	"use strict";
 	const getWrmSettingV2 = (settingKey) => {
-		console.log('getWrmSettingV2 function called');
-		let queryString = '?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=wrmb_name eq '+ settingKey + ' and statecode/Value eq 0';
+		let queryString = '?$select=wrmb_wrmsettingId, wrmb_name, wrmb_value&$filter=wrmb_name eq '+ settingKey + ' and statecode_value eq 0';
 		debugger;
 		return Xrm.WebApi.retrieveMultipleRecords("wrmb_wrmsetting", queryString).then((results) => {
 				debugger;
@@ -440,7 +439,8 @@ Wrm.Common = function (executionContext) {
 
 	var isLockTimeoutReachedV2 = function (DateTimeFieldName, formContext) {
 		DateTimeFieldName = typeof DateTimeFieldName !== 'undefined' ? DateTimeFieldName : 'createdon';
-		if (formContext.getAttribute(DateTimeFieldName) === null || formContext.getAttribute(DateTimeFieldName).getValue() === null || XrmServiceToolkit.Soap.IsCurrentUserRole("WRM Exclude from Lock-Out Time")) {
+
+		if (formContext.getAttribute(DateTimeFieldName) === null || formContext.getAttribute(DateTimeFieldName).getValue() === null || Xrm.Utility.getGlobalContext().userSettings.roles.getByName('WRM Exclude from Lock-Out Time')) {
 			return false;
 		}
 		var LockTimeout = Wrm.Common.GetWrmSetting("WRM.General.RecordLockTimeout");
@@ -505,9 +505,6 @@ Wrm.Common = function (executionContext) {
 	};
 
 	var setPhoneNumberCountryOnChangeV2 = function (countryfieldname, phonefieldname, formContext) {
-		console.log();
-		console.log();
-		console.log();
 		if (formContext.getAttribute(countryfieldname) !== null && formContext.getAttribute(phonefieldname) !== null) {
 			console.log();
 			formContext.getAttribute(countryfieldname).addOnChange(function () {
@@ -541,169 +538,169 @@ Wrm.Common = function (executionContext) {
 		}
 	}
 
-	var populateDynamicAddressMenuV2 = function (commandProperties, entityType, entityIds) {
-		commandProperties["PopulationXML"] = '<Menu Id="wrmb.account.AddressToClipboard.Button.Menu">';
-		commandProperties["PopulationXML"] += '<MenuSection Id="wrmb.account.AccountAddress.Section" Sequence="10" DisplayMode="Menu16">';
-		commandProperties["PopulationXML"] += '<Controls Id="wrmb.account.AccountAddress.Section.Controls">';
+	// var populateDynamicAddressMenuV2 = function (commandProperties, entityType, entityIds) {
+	// 	commandProperties["PopulationXML"] = '<Menu Id="wrmb.account.AddressToClipboard.Button.Menu">';
+	// 	commandProperties["PopulationXML"] += '<MenuSection Id="wrmb.account.AccountAddress.Section" Sequence="10" DisplayMode="Menu16">';
+	// 	commandProperties["PopulationXML"] += '<Controls Id="wrmb.account.AccountAddress.Section.Controls">';
 
-		var entityTypeName = "";
-		var clickEventName = "";
+	// 	var entityTypeName = "";
+	// 	var clickEventName = "";
 
-		if (entityType === 1) {
-			entityTypeName = "wrmb_companyid";
-			clickEventName = "wrmb.account.AddressItemClicked.Command";
-		} else if (entityType === 2) {
-			entityTypeName = "wrmb_contactid";
-			clickEventName = "wrmb.contact.AddressItemClicked.Command";
-		} else {
-			return;
-		}
+	// 	if (entityType === 1) {
+	// 		entityTypeName = "wrmb_companyid";
+	// 		clickEventName = "wrmb.account.AddressItemClicked.Command";
+	// 	} else if (entityType === 2) {
+	// 		entityTypeName = "wrmb_contactid";
+	// 		clickEventName = "wrmb.contact.AddressItemClicked.Command";
+	// 	} else {
+	// 		return;
+	// 	}
 
-		var filter = "(" + entityTypeName + "/Id eq " + entityIds[0].replace('{', '').replace('}', '') + " and statecode/Value eq 0)";
-		var select = "?$select=wrmb_addressId, wrmb_typeid, wrmb_street1";
+	// 	var filter = "(" + entityTypeName + "/Id eq " + entityIds[0].replace('{', '').replace('}', '') + " and statecode/Value eq 0)";
+	// 	var select = "?$select=wrmb_addressId, wrmb_typeid, wrmb_street1";
 
-		Xrm.WebApi.retrieveMultipleRecords("wrmb_address", select, filter).then(
-			function success(results) {
-				if (results !== null && results.length > 0) {
-					for (var i = 0; i < results.length; i++) {
-						if (results[i].wrmb_street1 !== null && results[i].wrmb_street1.length > 0) {
-							var menuText = ": " + results[i].wrmb_street1;
-							commandProperties["PopulationXML"] += '<Button Command="' + clickEventName + '" Id="' + results[i].wrmb_addressId + '" LabelText="' + results[i].wrmb_typeid.Name + menuText + '" Sequence="20" />';
-						}
-					}
-				}
-			},
-			function (error) {
-				alert(error.message);
-			}
-		).catch(function (error) {
-			alert(error.message);
-		}).finally(function () {
-			commandProperties["PopulationXML"] += '</Controls></MenuSection></Menu>';
-		});
-	}
+	// 	Xrm.WebApi.retrieveMultipleRecords("wrmb_address", select, filter).then(
+	// 		function success(results) {
+	// 			if (results !== null && results.length > 0) {
+	// 				for (var i = 0; i < results.length; i++) {
+	// 					if (results[i].wrmb_street1 !== null && results[i].wrmb_street1.length > 0) {
+	// 						var menuText = ": " + results[i].wrmb_street1;
+	// 						commandProperties["PopulationXML"] += '<Button Command="' + clickEventName + '" Id="' + results[i].wrmb_addressId + '" LabelText="' + results[i].wrmb_typeid.Name + menuText + '" Sequence="20" />';
+	// 					}
+	// 				}
+	// 			}
+	// 		},
+	// 		function (error) {
+	// 			alert(error.message);
+	// 		}
+	// 	).catch(function (error) {
+	// 		alert(error.message);
+	// 	}).finally(function () {
+	// 		commandProperties["PopulationXML"] += '</Controls></MenuSection></Menu>';
+	// 	});
+	// }
 
-	var populateDynamicEmailMenuV2 = function (commandProperties, entityType, entityIds) {
-		commandProperties["PopulationXML"] = '<Menu Id="wrmb.account.AddressToClipboard.Button.Menu">';
-		commandProperties["PopulationXML"] += '<MenuSection Id="wrmb.account.AccountAddress.Section" Sequence="10" DisplayMode="Menu16">';
-		commandProperties["PopulationXML"] += '<Controls Id="wrmb.account.AccountAddress.Section.Controls">';
+	// var populateDynamicEmailMenuV2 = function (commandProperties, entityType, entityIds) {
+	// 	commandProperties["PopulationXML"] = '<Menu Id="wrmb.account.AddressToClipboard.Button.Menu">';
+	// 	commandProperties["PopulationXML"] += '<MenuSection Id="wrmb.account.AccountAddress.Section" Sequence="10" DisplayMode="Menu16">';
+	// 	commandProperties["PopulationXML"] += '<Controls Id="wrmb.account.AccountAddress.Section.Controls">';
 
-		var entityTypeName = "";
-		var clickEventName = "";
+	// 	var entityTypeName = "";
+	// 	var clickEventName = "";
 
-		if (entityType === 1) {
-			entityTypeName = "wrmb_companyid";
-			clickEventName = "wrmb.account.EmailItemClicked.Command";
-		}
-		else if (entityType === 2) {
-			entityTypeName = "wrmb_contactid";
-			clickEventName = "wrmb.contact.EmailItemClicked.Command";
-		}
-		else {
-			return;
-		}
+	// 	if (entityType === 1) {
+	// 		entityTypeName = "wrmb_companyid";
+	// 		clickEventName = "wrmb.account.EmailItemClicked.Command";
+	// 	}
+	// 	else if (entityType === 2) {
+	// 		entityTypeName = "wrmb_contactid";
+	// 		clickEventName = "wrmb.contact.EmailItemClicked.Command";
+	// 	}
+	// 	else {
+	// 		return;
+	// 	}
 
-		Xrm.WebApi.retrieveMultipleRecords("wrmb_address", "?$select=wrmb_emailaddress1&$filter=(" + entityTypeName + "/Id eq (guid'" + entityIds[0].replace('{', '').replace('}', '') + "') and statecode/Value eq 0)")
-			.then(function (results) {
-				if (results !== null && results.entities.length > 0) {
-					for (var i = 0; i < results.entities.length; i++) {
-						if (results.entities[i].wrmb_emailaddress1 !== null && results.entities[i].wrmb_emailaddress1.length > 0) {
-							commandProperties["PopulationXML"] += '<Button Command="' + clickEventName + '" Id="' + results.entities[i].wrmb_emailaddress1 + '" LabelText="' + results.entities[i].wrmb_emailaddress1 + '" Sequence="20" />';
-						}
-					}
-				}
-			})
-			.catch(function (error) {
-				alert(error.message);
-			})
-			.then(function () {
-				commandProperties["PopulationXML"] += '</Controls></MenuSection></Menu>';
-			});
-	}
+	// 	Xrm.WebApi.retrieveMultipleRecords("wrmb_address", "?$select=wrmb_emailaddress1&$filter=(" + entityTypeName + "/Id eq (guid'" + entityIds[0].replace('{', '').replace('}', '') + "') and statecode/Value eq 0)")
+	// 		.then(function (results) {
+	// 			if (results !== null && results.entities.length > 0) {
+	// 				for (var i = 0; i < results.entities.length; i++) {
+	// 					if (results.entities[i].wrmb_emailaddress1 !== null && results.entities[i].wrmb_emailaddress1.length > 0) {
+	// 						commandProperties["PopulationXML"] += '<Button Command="' + clickEventName + '" Id="' + results.entities[i].wrmb_emailaddress1 + '" LabelText="' + results.entities[i].wrmb_emailaddress1 + '" Sequence="20" />';
+	// 					}
+	// 				}
+	// 			}
+	// 		})
+	// 		.catch(function (error) {
+	// 			alert(error.message);
+	// 		})
+	// 		.then(function () {
+	// 			commandProperties["PopulationXML"] += '</Controls></MenuSection></Menu>';
+	// 		});
+	// }
 
-	var addressItemClickedV2 = function (commandProperties) {
-		var addressId = commandProperties.SourceControlId;
+	// var addressItemClickedV2 = function (commandProperties) {
+	// 	var addressId = commandProperties.SourceControlId;
 
-		Xrm.WebApi.retrieveRecord("wrmb_address", addressId, "?$select=wrmb_salutation,wrmb_name,wrmb_co,wrmb_street1,wrmb_street2,wrmb_postofficebox,wrmb_postalcode,wrmb_city,wrmb_countryid")
-			.then(function (result) {
-				var fullAddress = "";
+	// 	Xrm.WebApi.retrieveRecord("wrmb_address", addressId, "?$select=wrmb_salutation,wrmb_name,wrmb_co,wrmb_street1,wrmb_street2,wrmb_postofficebox,wrmb_postalcode,wrmb_city,wrmb_countryid")
+	// 		.then(function (result) {
+	// 			var fullAddress = "";
 
-				if (result.wrmb_salutation !== null && result.wrmb_salutation.length > 0)
-					fullAddress += result.wrmb_salutation + "\n";
+	// 			if (result.wrmb_salutation !== null && result.wrmb_salutation.length > 0)
+	// 				fullAddress += result.wrmb_salutation + "\n";
 
-				if (result.wrmb_name !== null && result.wrmb_name.length > 0)
-					fullAddress += result.wrmb_name + "\n";
+	// 			if (result.wrmb_name !== null && result.wrmb_name.length > 0)
+	// 				fullAddress += result.wrmb_name + "\n";
 
-				if (result.wrmb_co !== null && result.wrmb_co.length > 0)
-					fullAddress += "c/o " + result.wrmb_co + "\n";
+	// 			if (result.wrmb_co !== null && result.wrmb_co.length > 0)
+	// 				fullAddress += "c/o " + result.wrmb_co + "\n";
 
-				if (result.wrmb_street1 !== null && result.wrmb_street1.length > 0)
-					fullAddress += result.wrmb_street1 + "\n";
+	// 			if (result.wrmb_street1 !== null && result.wrmb_street1.length > 0)
+	// 				fullAddress += result.wrmb_street1 + "\n";
 
-				if (result.wrmb_street2 !== null && result.wrmb_street2.length > 0)
-					fullAddress += result.wrmb_street2 + "\n";
+	// 			if (result.wrmb_street2 !== null && result.wrmb_street2.length > 0)
+	// 				fullAddress += result.wrmb_street2 + "\n";
 
-				if (result.wrmb_postofficebox !== null && result.wrmb_postofficebox.length > 0)
-					fullAddress += result.wrmb_postofficebox + "\n";
+	// 			if (result.wrmb_postofficebox !== null && result.wrmb_postofficebox.length > 0)
+	// 				fullAddress += result.wrmb_postofficebox + "\n";
 
-				if (result.wrmb_postalcode !== null && result.wrmb_postalcode.length > 0)
-					fullAddress += result.wrmb_postalcode + " ";
+	// 			if (result.wrmb_postalcode !== null && result.wrmb_postalcode.length > 0)
+	// 				fullAddress += result.wrmb_postalcode + " ";
 
-				if (result.wrmb_city !== null && result.wrmb_city.length > 0)
-					fullAddress += result.wrmb_city + "\n";
+	// 			if (result.wrmb_city !== null && result.wrmb_city.length > 0)
+	// 				fullAddress += result.wrmb_city + "\n";
 
-				if (result.wrmb_countryid !== null && result.wrmb_countryid.Name !== null && result.wrmb_countryid.Name.length > 0)
-					fullAddress += result.wrmb_countryid.Name;
+	// 			if (result.wrmb_countryid !== null && result.wrmb_countryid.Name !== null && result.wrmb_countryid.Name.length > 0)
+	// 				fullAddress += result.wrmb_countryid.Name;
 
-				window.clipboardData.setData("Text", fullAddress);
-			})
-			.catch(function (error) {
-				alert(error.message);
-			});
-	}
+	// 			window.clipboardData.setData("Text", fullAddress);
+	// 		})
+	// 		.catch(function (error) {
+	// 			alert(error.message);
+	// 		});
+	// }
 
-	var emailItemClickedV2 = function (commandProperties) {
-		var email = commandProperties.SourceControlId;
-		window.clipboardData.setData("Text", email);
-	}
+	// var emailItemClickedV2 = function (commandProperties) {
+	// 	var email = commandProperties.SourceControlId;
+	// 	window.clipboardData.setData("Text", email);
+	// }
 
-	var isAddressEmailCopyEnabledV2 = function () {
-		if (Wrm.Common.GetWrmSettingV2("WRM.AddressEmailCopy.IsEnabled") === "1") {
-			return true;
-		}
+	// var isAddressEmailCopyEnabledV2 = function () {
+	// 	if (Wrm.Common.GetWrmSettingV2("WRM.AddressEmailCopy.IsEnabled") === "1") {
+	// 		return true;
+	// 	}
 
-		return false;
-	}
+	// 	return false;
+	// }
 
-	var openConnectionGraphV2 = function (formContext) {
-		//Daten werden in Modal-Dialog-HTML geladen
-		var WinSettingsOpen = "resizable=no,titlebar=no,menubar=no,scrollbars=no,toolbar=no,height=705px,width=905px";
-		var WinSettings = "center:yes;titlebar=no;toolbar=no;resizable:no;dialogHeight:705px;dialogWidth:905px";
-		var WinParams = new Object();
-		WinParams.id = formContext.data.entity.getId();
-		WinParams.entityname = formContext.data.entity.getEntityName();
-		WinParams.name = "Current Item";
-		if (WinParams.entityname === "contact") {
-			WinParams.name = formContext.getAttribute("fullname").getValue();
-		}
-		if (WinParams.entityname === "account") {
-			WinParams.name = formContext.getAttribute("name").getValue();
-		}
+	// var openConnectionGraphV2 = function (formContext) {
+	// 	//Daten werden in Modal-Dialog-HTML geladen
+	// 	var WinSettingsOpen = "resizable=no,titlebar=no,menubar=no,scrollbars=no,toolbar=no,height=705px,width=905px";
+	// 	var WinSettings = "center:yes;titlebar=no;toolbar=no;resizable:no;dialogHeight:705px;dialogWidth:905px";
+	// 	var WinParams = new Object();
+	// 	WinParams.id = formContext.data.entity.getId();
+	// 	WinParams.entityname = formContext.data.entity.getEntityName();
+	// 	WinParams.name = "Current Item";
+	// 	if (WinParams.entityname === "contact") {
+	// 		WinParams.name = formContext.getAttribute("fullname").getValue();
+	// 	}
+	// 	if (WinParams.entityname === "account") {
+	// 		WinParams.name = formContext.getAttribute("name").getValue();
+	// 	}
 
-		var resUrl = formContext.context.prependOrgName("/WebResources/wrmb_/ConnectionGraph.html");
-		var paramEncode = encodeURIComponent("id=" + WinParams.id + "&entityname=" + WinParams.entityname + "&name=" + WinParams.name);
+	// 	var resUrl = formContext.context.prependOrgName("/WebResources/wrmb_/ConnectionGraph.html");
+	// 	var paramEncode = encodeURIComponent("id=" + WinParams.id + "&entityname=" + WinParams.entityname + "&name=" + WinParams.name);
 
-		var openWindow = window.open(resUrl + "?data=" + paramEncode, "_blank", WinSettingsOpen);
-		//var ModDialog = window.showModalDialog(resUrl, WinParams, WinSettings);
-	}
+	// 	var openWindow = window.open(resUrl + "?data=" + paramEncode, "_blank", WinSettingsOpen);
+	// 	//var ModDialog = window.showModalDialog(resUrl, WinParams, WinSettings);
+	// }
 
-	var isConnectionGraphEnabledV2 = function () {
-		if (Wrm.Common.GetWrmSettingV2("WRM.ConnectionGraph.IsEnabled") === "1") {
-			return true;
-		}
+	// var isConnectionGraphEnabledV2 = function () {
+	// 	if (Wrm.Common.GetWrmSettingV2("WRM.ConnectionGraph.IsEnabled") === "1") {
+	// 		return true;
+	// 	}
 
-		return false;
-	}
+	// 	return false;
+	// }
 
 	return {
 		IsPortfolioNetEnabled: isPortfolioNetEnabled,
@@ -735,12 +732,12 @@ Wrm.Common = function (executionContext) {
 		SetPhoneNumberCountryOnChangeV2: setPhoneNumberCountryOnChangeV2,
 		SetAddressCountryOnChangeV2: setAddressCountryOnChangeV2,
 		CheckAddressCountryV2: checkAddressCountryV2,
-		PopulateDynamicAddressMenuV2: populateDynamicAddressMenuV2,
-		PopulateDynamicEmailMenuV2: populateDynamicEmailMenuV2,
-		AddressItemClickedV2: addressItemClickedV2,
-		EmailItemClickedV2: emailItemClickedV2,
-		IsAddressEmailCopyEnabledV2: isAddressEmailCopyEnabledV2,
-		OpenConnectionGraphV2: openConnectionGraphV2,
-		IsConnectionGraphEnabledV2: isConnectionGraphEnabledV2
+		// PopulateDynamicAddressMenuV2: populateDynamicAddressMenuV2,
+		// PopulateDynamicEmailMenuV2: populateDynamicEmailMenuV2,
+		// AddressItemClickedV2: addressItemClickedV2,
+		// EmailItemClickedV2: emailItemClickedV2,
+		// IsAddressEmailCopyEnabledV2: isAddressEmailCopyEnabledV2,
+		// OpenConnectionGraphV2: openConnectionGraphV2,
+		// IsConnectionGraphEnabledV2: isConnectionGraphEnabledV2
 	};
 }();
