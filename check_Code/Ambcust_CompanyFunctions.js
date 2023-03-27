@@ -1,23 +1,18 @@
 if (!this.Mah) {
 	"use strict";
-	debugger;
 	Mah = function () { };
 }
 
 Mah.Company = function (executionContext) {
 	"use strict";
-	debugger;
 	var onLoad = function (executionContext) {
 		/*if(formContext.getAttribute("wrmb_isclient") != null && formContext.getAttribute("wrmb_isclient").getValue() == true && XrmServiceToolkit.Soap.IsCurrentUserRole("MAH Data Management") == false){
 			Mah.Company.DisableAllControlsInTab("GENERAL_TAB");
 		}*/
-		debugger;
 		let formContext = executionContext.getFormContext();
-		debugger;
 		Mah.Company.SetPrincipalFieldEnabledDisabled(executionContext);
 
 		if (formContext.getAttribute("wrmb_companytypeid") !== null) {
-			debugger;
 			formContext.getAttribute("wrmb_companytypeid").addOnChange(Mah.Company.SetPrincipalFieldEnabledDisabled);
 		}
 	};
@@ -38,7 +33,6 @@ Mah.Company = function (executionContext) {
 				var myname = myattribute.getName();
 				if ((myname === "statecode") || (myname === "wrmb_isclient") || (formContext.getControl(myname) === null) || (formContext.getControl(myname).getParent() === null))
 					continue;
-
 				var control = formContext.getControl(myname);
 				if ((control.getParent().getParent() === tabControl) && (control.getControlType() !== "subgrid")) {
 					control.setDisabled(true);
@@ -48,14 +42,11 @@ Mah.Company = function (executionContext) {
 	};
 
 	var setPrincipalFieldEnabledDisabled = function (executionContext) {
-		debugger;
 		let formContext = executionContext.getFormContext();
 
 		if (formContext.getAttribute("wrmb_isclient") !== null) {
 			var userHasRoleForPrincipalChange = Mah.Company.GetUserHasRolesForPrincipalChange(formContext);
-			debugger;
 			var companyTypeEqualsSettings = Mah.Company.GetCompanyTypeEqualsSettingsEntries(formContext);
-			debugger;
 			if (userHasRoleForPrincipalChange) {
 				formContext.getControl("wrmb_isclient").setDisabled(false);
 			}
@@ -68,15 +59,13 @@ Mah.Company = function (executionContext) {
 		}
 	};
 
-	var getCompanyTypeEqualsSettingsEntries = function (formContext) {
-		debugger;
-		var acceptedCompanyTypesSetting = Wrm.Common.GetWrmSetting("WRM.MAH.PrincipalManipulationCompanyTypes");
+	var getCompanyTypeEqualsSettingsEntries = async (formContext) => {
+		var acceptedCompanyTypesSetting = await Wrm.Common.GetWrmSettingV2("WRM.MAH.PrincipalManipulationCompanyTypes");
 		var companyTypeMatchesSettings = false;
 
 		if (acceptedCompanyTypesSetting !== null && acceptedCompanyTypesSetting !== "") {
 			var acceptedCompanyTypes = acceptedCompanyTypesSetting.split(",");
 			var companyTypeCurrent = formContext.getAttribute("wrmb_companytypeid").getValue();
-			debugger;
 
 			if (companyTypeCurrent === null || companyTypeCurrent[0] === null || companyTypeCurrent[0].name === null || companyTypeCurrent[0].name.trim() === "") {
 				return false;
@@ -94,11 +83,13 @@ Mah.Company = function (executionContext) {
 		return companyTypeMatchesSettings;
 	};
 
-	var getUserHasRolesForPrincipalChange = function (formContext) {
+	var getUserHasRolesForPrincipalChange = async (formContext) => {
+		//WRM.MAH.PrincipalManipulationRoles
 
-		var acceptedUserRolesSettings = Wrm.Common.GetWrmSetting("WRM.MAH.PrincipalManipulationRoles");
-		debugger;
+		var acceptedUserRolesSettings = await Wrm.Common.GetWrmSettingV2("WRM.MAH.PrincipalManipulationRoles");
+		console.log(acceptedUserRolesSettings);
 		if (acceptedUserRolesSettings !== null && acceptedUserRolesSettings !== "") {
+			console.log(acceptedUserRolesSettings);
 			var acceptedUserRoles = acceptedUserRolesSettings.split(",");
 			debugger;
 			if (acceptedUserRoles.length > 0) {
@@ -156,22 +147,18 @@ Mah.Company = function (executionContext) {
 
 					try {
 						let results = await Xrm.WebApi.retrieveMultipleRecords("role", "?fetchXml=" + encodeURIComponent(fetchUserAssociatedRoles));
-						debugger;
 						return results;
 					} catch (error) {
-						debugger;
 						console.error(error);
 					}
 				}
 
 
 				let retrievedRoles = xrmAsyncFetch().then(function (response) {
-					debugger;
 					return response;
 				})
 
 				if (retrievedRoles.length > 0) {
-					debugger;
 					return true;
 
 				}
@@ -180,13 +167,11 @@ Mah.Company = function (executionContext) {
 
 		return false;
 	};
-	debugger;
 	return {
-
 		OnLoad: onLoad,
 		DisableAllControlsInTab: disableAllControlsInTab,
 		GetUserHasRolesForPrincipalChange: getUserHasRolesForPrincipalChange,
 		SetPrincipalFieldEnabledDisabled: setPrincipalFieldEnabledDisabled,
-		GetCompanyTypeEqualsSettingsEntries: getCompanyTypeEqualsSettingsEntries
+		GetCompanyTypeEqualsSettingsEntries: getCompanyTypeEqualsSettingsEntries,
 	};
 }();
