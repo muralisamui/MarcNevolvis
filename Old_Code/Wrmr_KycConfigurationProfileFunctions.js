@@ -19,7 +19,7 @@ Wrm.KycConfigurationProfile = function () {
 		}
     };
 	
-    var revise = function () {
+    /*var revise = function () {
 		var entityId = Xrm.Page.data.entity.getId();
 		var entityName = Xrm.Page.data.entity.getEntityName();
 		var requestName = "wrmr_createrevisionaction_configurationprofile";
@@ -60,7 +60,7 @@ Wrm.KycConfigurationProfile = function () {
 			 Xrm.Utility.alert(e);
 		  }
 		});
-    };
+    };*/
 	
     var isPublished = function () {
 		if(Xrm.Page.getAttribute("statuscode") != null && Xrm.Page.getAttribute("statuscode").getValue() == 1){
@@ -73,7 +73,7 @@ Wrm.KycConfigurationProfile = function () {
     return {
         Publish: publish,
         Unpublish: unpublish,
-		Revise: revise,
+		//Revise: revise,
         IsPublished: isPublished
     };
 } ();
