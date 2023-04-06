@@ -1,8 +1,9 @@
 if (!this.Wrm){
+	'use strict'
 	Wrm = function () {};
 }
 
-Wrm.KycApprovalProcess = function () {
+Wrm.KycApprovalProcess = function (executionContext) {
 /*
 statuscode:
 1 = Requested (Compliance)
@@ -10,10 +11,12 @@ statuscode:
 320560001 = rejected
 320560002 = Requested (Management)
 */	
+	'use strict';
+	let formContext = executionContext.getFormContext();
     var requestKycApproval = function (eid, etn) {
 		var countActive = Wrm.KycApprovalProcess.CountActiveKycApproval(eid, etn);
 		var countInProgress = Wrm.KycApprovalProcess.CountInProgressKycApproval(eid, etn);
-		if(countInProgress == 0){
+		if(countInProgress === 0){
 			// create a new one
 			var kycapproval = {};
 			if(countActive > 0){
@@ -22,16 +25,16 @@ statuscode:
 				kycapproval.wrmr_type = { Value: 320560000 }; //initial
 			}
 			
-			if(Xrm.Page.getAttribute("wrmb_marketer") != null && Xrm.Page.getAttribute("wrmb_marketer").getValue() != null){
-				kycapproval.wrmr_advisorid = { Id: Xrm.Page.getAttribute("wrmb_marketer").getValue()[0].id, LogicalName: "systemuser" }
+			if(formContext.getAttribute("wrmb_marketer") !== null && formContext.getAttribute("wrmb_marketer").getValue() !== null){
+				kycapproval.wrmr_advisorid = { Id: formContext.getAttribute("wrmb_marketer").getValue()[0].id, LogicalName: "systemuser" }
 			}else{
-				kycapproval.wrmr_advisorid = { Id: Xrm.Page.context.getUserId(), LogicalName: "systemuser" }
+				kycapproval.wrmr_advisorid = { Id: formContext.context.getUserId(), LogicalName: "systemuser" }
 			}
 			
-			if(etn.toLowerCase() == "contact"){
+			if(etn.toLowerCase() === "contact"){
 				kycapproval.wrmr_contactid = { Id: eid, LogicalName: etn.toLowerCase() };
 			}
-			if(etn.toLowerCase() == "account"){
+			if(etn.toLowerCase() === "account"){
 				kycapproval.wrmr_companyid = { Id: eid, LogicalName: etn.toLowerCase() };
 			}
 			
@@ -65,84 +68,84 @@ statuscode:
     };
 	
     var approveKycRequest = function() {
-    	if (Xrm.Page.data.getIsValid() == false)
+    	if (formContext.data.getIsValid() === false)
     	{
-    		Xrm.Page.ui.setFormNotification("Please enter all required information", "ERROR");
+    		formContext.ui.setFormNotification("Please enter all required information", "ERROR");
     	}
     	else
     	{
-    		if (Xrm.Page.getAttribute("statuscode") != null && Xrm.Page.getAttribute("statuscode").getValue() == 320560002)
+    		if (formContext.getAttribute("statuscode") !== null && formContext.getAttribute("statuscode").getValue() === 320560002)
     		{
     			Wrm.KycApprovalProcess.SetCurrentUserAndDateManagement();
-    			Xrm.Page.data.setFormDirty(false);    			
+    			formContext.data.setFormDirty(false);    			
     		}
     	
-	    	Xrm.Page.data.entity.save();
+	    	formContext.data.entity.save();
 	    	XrmServiceToolkit.Soap.SetState(
-				Xrm.Page.data.entity.getEntityName(),
-				Xrm.Page.data.entity.getId(),
+				formContext.data.entity.getEntityName(),
+				formContext.data.entity.getId(),
 				0,
 				320560000
 				);
 			Xrm.Utility.alertDialog("KYC Approval successfully approved!");
-			Xrm.Utility.openEntityForm(Xrm.Page.data.entity.getEntityName(), Xrm.Page.data.entity.getId());
+			Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), formContext.data.entity.getId());
 		}
     };
     
     var rejectKycRequest = function() {
-    	if (Xrm.Page.data.getIsValid() == false)
+    	if (formContext.data.getIsValid() === false)
     	{
-    		Xrm.Page.ui.setFormNotification("Please enter all required information", "ERROR");
+    		formContext.ui.setFormNotification("Please enter all required information", "ERROR");
     	}
     	else
     	{
-    		if (Xrm.Page.getAttribute("statuscode") != null && Xrm.Page.getAttribute("statuscode").getValue() == 320560002)
+    		if (formContext.getAttribute("statuscode") !== null && formContext.getAttribute("statuscode").getValue() === 320560002)
     		{
     			Wrm.KycApprovalProcess.SetCurrentUserAndDateManagement();
-    			Xrm.Page.data.setFormDirty(false);
+    			formContext.data.setFormDirty(false);
     		}
     	
-	    	Xrm.Page.data.entity.save();
+	    	formContext.data.entity.save();
 	    	XrmServiceToolkit.Soap.SetState(
-				Xrm.Page.data.entity.getEntityName(),
-				Xrm.Page.data.entity.getId(),
+				formContext.data.entity.getEntityName(),
+				formContext.data.entity.getId(),
 				0,
 				320560001
 				);
 			Xrm.Utility.alertDialog("KYC Approval rejected!");
-			Xrm.Utility.openEntityForm(Xrm.Page.data.entity.getEntityName(), Xrm.Page.data.entity.getId());
+			Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), formContext.data.entity.getId());
 		}
     };
     
     var requestMgmtApproval = function() {
-    	if (Xrm.Page.data.getIsValid() == false)
+    	if (formContext.data.getIsValid() === false)
     	{
-    		Xrm.Page.ui.setFormNotification("Please enter all required information", "ERROR");
+    		formContext.ui.setFormNotification("Please enter all required information", "ERROR");
     	}
     	else
     	{
-	    	Xrm.Page.data.entity.save();
+	    	formContext.data.entity.save();
 	    	XrmServiceToolkit.Soap.SetState(
-				Xrm.Page.data.entity.getEntityName(),
-				Xrm.Page.data.entity.getId(),
+				formContext.data.entity.getEntityName(),
+				formContext.data.entity.getId(),
 				0,
 				320560002
 				);
 			Xrm.Utility.alertDialog("Management approval requested!");
-			Xrm.Utility.openEntityForm(Xrm.Page.data.entity.getEntityName(), Xrm.Page.data.entity.getId());
+			Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), formContext.data.entity.getId());
 		}			
     };
 	
 	var getInProgressKycApproval = function(eid, etn) {
 		var lookupField = "";
 		
-		if(etn.toLowerCase() == "contact"){
+		if(etn.toLowerCase() === "contact"){
 			lookupField = "wrmr_contactid";
 		}
-		if(etn.toLowerCase() == "account"){
+		if(etn.toLowerCase() === "account"){
 			lookupField = "wrmr_companyid";
 		}
-		if(lookupField == ""){
+		if(lookupField === ""){
 			return null;
 		}
 		
@@ -165,7 +168,7 @@ statuscode:
 	
 	var countInProgressKycApproval = function(eid, etn) {
 		var retrievedKycApprovals = Wrm.KycApprovalProcess.GetInProgressKycApproval(eid, etn);
-		if(retrievedKycApprovals == null){
+		if(retrievedKycApprovals === null){
 			return -1;
 		}
 		return retrievedKycApprovals.length;
@@ -174,13 +177,13 @@ statuscode:
 	var getActiveKycApproval = function(eid, etn) {
 		var lookupField = "";
 		
-		if(etn.toLowerCase() == "contact"){
+		if(etn.toLowerCase() === "contact"){
 			lookupField = "wrmr_contactid";
 		}
-		if(etn.toLowerCase() == "account"){
+		if(etn.toLowerCase() === "account"){
 			lookupField = "wrmr_companyid";
 		}
-		if(lookupField == ""){
+		if(lookupField === ""){
 			return null;
 		}
 		
@@ -201,7 +204,7 @@ statuscode:
 	
 	var countActiveKycApproval = function(eid, etn) {
 		var retrievedKycApprovals = Wrm.KycApprovalProcess.GetActiveKycApproval(eid, etn);
-		if(retrievedKycApprovals == null){
+		if(retrievedKycApprovals === null){
 			return -1;
 		}
 		return retrievedKycApprovals.length;
@@ -216,7 +219,7 @@ statuscode:
 	};
 	
 	var isRequestButtonAvailable = function() {
-		if(Xrm.Page.getAttribute("wrmb_isclient") != null && Xrm.Page.getAttribute("wrmb_isclient").getValue() == true){
+		if(formContext.getAttribute("wrmb_isclient") !== null && formContext.getAttribute("wrmb_isclient").getValue() === true){
 			return true;
 		}else{
 			return false;
@@ -225,20 +228,20 @@ statuscode:
 	
 	var setCurrentUserAndDateManagement = function () {
 
-        if (Xrm.Page.getAttribute("wrmr_boardmemberid") != null && Xrm.Page.getAttribute("wrmr_boardmemberid").getValue() == null) {
+        if (formContext.getAttribute("wrmr_boardmemberid") !== null && formContext.getAttribute("wrmr_boardmemberid").getValue() === null) {
             var lookupReference = [];
             lookupReference[0] = {};
-            lookupReference[0].id = Xrm.Page.context.getUserId();
+            lookupReference[0].id = formContext.context.getUserId();
             lookupReference[0].entityType = "systemuser";
-            lookupReference[0].name = Xrm.Page.context.getUserName();
-            Xrm.Page.getAttribute("wrmr_boardmemberid").setValue(lookupReference);
-            Xrm.Page.getAttribute("wrmr_boardmemberid").setSubmitMode("always");
+            lookupReference[0].name = formContext.context.getUserName();
+            formContext.getAttribute("wrmr_boardmemberid").setValue(lookupReference);
+            formContext.getAttribute("wrmr_boardmemberid").setSubmitMode("always");
         }
 
-        if (Xrm.Page.getAttribute("wrmr_mgmtdate") != null && Xrm.Page.getAttribute("wrmr_mgmtdate").getValue() == null)
+        if (formContext.getAttribute("wrmr_mgmtdate") !== null && formContext.getAttribute("wrmr_mgmtdate").getValue() === null)
         { 
-        	Xrm.Page.getAttribute("wrmr_mgmtdate").setValue(new Date()); 
-        	Xrm.Page.getAttribute("wrmr_mgmtdate").setSubmitMode("always");
+        	formContext.getAttribute("wrmr_mgmtdate").setValue(new Date()); 
+        	formContext.getAttribute("wrmr_mgmtdate").setSubmitMode("always");
         	
         }
     };
